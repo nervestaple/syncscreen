@@ -1,26 +1,38 @@
+import { Layout } from 'antd';
 import React from 'react';
-import logo from './logo.svg';
+
+import { Header } from './Header';
+import { useAuth } from './AuthProvider';
+import { DropzoneProvider } from './DropzoneProvider';
+import { RenderRoute } from './RenderRoute';
 import './App.css';
 
-function App() {
-  return (
+const { Content, Footer } = Layout;
+
+export function App() {
+  const { isAuthLoaded, user } = useAuth();
+
+  const shouldDisableDrag = !isAuthLoaded || !user;
+
+  const render = (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Header />
+        {isAuthLoaded && (
+          <>
+            <Content style={{ marginTop: 50, padding: '0 60px' }}>
+              <RenderRoute />
+            </Content>
+            <Footer style={{ textAlign: 'center' }}>Jim ©2020</Footer>
+          </>
+        )}
+      </Layout>
     </div>
   );
-}
 
-export default App;
+  if (shouldDisableDrag) {
+    return render;
+  }
+
+  return <DropzoneProvider>{render}</DropzoneProvider>;
+}
