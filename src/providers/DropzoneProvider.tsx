@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
 
-import { DragPane } from './DragPane';
+import { DragPane } from '../components/DragPane';
 
 const DropzoneContext = React.createContext<{
   url: string | null;

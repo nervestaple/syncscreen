@@ -1,10 +1,11 @@
 import { Layout } from 'antd';
 import React from 'react';
 
-import { Header } from './Header';
-import { useAuth } from './AuthProvider';
-import { DropzoneProvider } from './DropzoneProvider';
-import { RenderRoute } from './RenderRoute';
+import { Header } from './components/Header';
+import { useAuth } from './providers/AuthProvider';
+import { DropzoneProvider } from './providers/DropzoneProvider';
+import { RenderRoute } from './router/RenderRoute';
+
 import './App.css';
 
 const { Content, Footer } = Layout;

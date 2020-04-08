@@ -1,8 +1,7 @@
 import * as firebase from 'firebase/app';
 import * as React from 'react';
 import ReactPlayer from 'react-player';
-
-import { useRoom } from './RoomProvider';
+import { useRoute } from 'react-router5';
 
 interface Props {
   url: string | null;
@@ -18,7 +17,12 @@ type ProgressHandler = (state: {
 const rooms = firebase.firestore().collection('rooms');
 
 export function Player({ url }: Props) {
-  const { roomId } = useRoom();
+  const {
+    route: {
+      params: { roomId },
+    },
+  } = useRoute();
+
   const roomDoc = roomId ? rooms.doc(roomId) : null;
 
   // TODO: any better way to handle null roomId? catch it earlier?
@@ -50,9 +54,10 @@ export function Player({ url }: Props) {
     <div
       style={{
         width: '100%',
+        height: '30vw',
         backgroundColor: 'black',
         border: '1px solid #303030',
-        paddingBottom: '56.25%',
+        maxHeight: '90vh',
       }}
     >
       {url && (

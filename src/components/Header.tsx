@@ -8,16 +8,31 @@ import {
   Popconfirm,
 } from 'antd';
 import * as React from 'react';
+import { useRoute } from 'react-router5';
 
-import { useAuth } from './AuthProvider';
-import { useRoom } from './RoomProvider';
+import { useAuth } from '../providers/AuthProvider';
+import { generateNewRoom } from '../utils/generateNewRoom';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;
 
 export function Header() {
   const { user, logout } = useAuth();
-  const { roomId, setNewRoom } = useRoom();
+
+  const {
+    route: {
+      params: { roomId },
+    },
+    router: { navigate },
+  } = useRoute();
+
+  const handleGenerateClick = React.useCallback(async () => {
+    if (!user) {
+      return;
+    }
+    const newRoom = await generateNewRoom(user);
+    navigate('rooms.:roomId', { roomId: newRoom.id });
+  }, [navigate, user]);
 
   const menu = (
     <Menu>
@@ -47,7 +62,7 @@ export function Header() {
               okText="Yes"
               cancelText="No"
               okType="danger"
-              onConfirm={setNewRoom}
+              onConfirm={handleGenerateClick}
             >
               <Button style={{ marginRight: 20 }}>Generate new room</Button>
             </Popconfirm>

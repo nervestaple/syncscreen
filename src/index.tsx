@@ -4,9 +4,8 @@ import { RouterProvider } from 'react-router5';
 import * as serviceWorker from './serviceWorker';
 
 import { App } from './App';
-import { AuthProvider } from './AuthProvider';
-import { RoomProvider } from './RoomProvider';
-import { startRouter } from './router';
+import { AuthProvider } from './providers/AuthProvider';
+import { startRouter } from './router/router';
 
 import './index.css';
 
@@ -17,9 +16,7 @@ async function main() {
     <React.StrictMode>
       <RouterProvider router={router}>
         <AuthProvider>
-          <RoomProvider>
-            <App />
-          </RoomProvider>
+          <App />
         </AuthProvider>
       </RouterProvider>
     </React.StrictMode>,
