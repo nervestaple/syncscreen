@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/dark-theme": "^2.0.1",
+    "@ant-design/icons": "^4.0.6",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -11,6 +12,7 @@
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
+    "@videojs/http-streaming": "^1.13.2",
     "antd": "4.1.0",
     "antd-dayjs-webpack-plugin": "^1.0.0",
     "babel-plugin-import": "^1.13.0",
@@ -29,7 +31,8 @@
     "router5-plugin-browser": "^8.0.1",
     "router5-plugin-logger": "^8.0.1",
     "router5-plugin-persistent-params": "^8.0.1",
-    "typescript": "~3.7.2"
+    "typescript": "~3.7.2",
+    "video.js": "^7.7.5"
   },
   "scripts": {
     "start": "react-app-rewired start",
@@ -53,6 +56,7 @@
     ]
   },
   "devDependencies": {
+    "@types/video.js": "^7.3.7",
     "css-loader": "^3.4.2",
     "less": "^3.11.1",
     "less-loader": "^5.0.0",

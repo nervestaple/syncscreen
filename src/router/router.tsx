@@ -6,12 +6,14 @@ import loggerPlugin from 'router5-plugin-logger';
 
 import { RoomView } from '../views/RoomView';
 import { RoomsView } from '../views/RoomsView';
+import { SignIn } from '../components/SignIn';
 
 type AppRoute = Route<Record<string, any>> & {
   render: JSX.Element | null;
 };
 
 export const routes: AppRoute[] = [
+  { name: 'login', path: '/login', render: <SignIn /> },
   { name: 'rooms', path: '/rooms', render: <RoomsView /> },
   { name: 'rooms.:roomId', path: '/:roomId', render: <RoomView /> },
 ];

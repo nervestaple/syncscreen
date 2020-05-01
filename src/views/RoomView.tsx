@@ -1,4 +1,4 @@
-import { Card, Layout } from 'antd';
+import { Layout, Typography } from 'antd';
 import * as firebase from 'firebase/app';
 import * as React from 'react';
 import { useRoute } from 'react-router5';
@@ -7,13 +7,15 @@ import { useAuth } from '../providers/AuthProvider';
 import { useDropzoneURL } from '../providers/DropzoneProvider';
 import { Player } from '../components/Player';
 import { RoomSider } from '../components/RoomSider';
-import { SignIn } from '../components/SignIn';
 import { URLControl } from '../components/URLControl';
 import { useInputURL } from '../components/URLInput';
+import { RemoteRoom } from '../types';
 
 const { Content } = Layout;
+const { Title } = Typography;
 
 const firestore = firebase.firestore();
+const rooms = firestore.collection('rooms');
 
 export function RoomView() {
   const {
@@ -25,6 +27,7 @@ export function RoomView() {
   const {
     url: dropzoneURL,
     lastSetTime: lastDropzoneURLSetTime,
+    file,
     onClick: onFilePickerClick,
   } = useDropzoneURL();
 
@@ -47,7 +50,7 @@ export function RoomView() {
         return;
       }
 
-      const lastRoom = firestore.collection('rooms').doc(roomId);
+      const lastRoom = rooms.doc(roomId);
       const lastRoomSnap = await lastRoom.get();
 
       if (!lastRoomSnap.exists) {
@@ -61,13 +64,7 @@ export function RoomView() {
     checkRoomAndSetLastRoom();
   }, [navigate, roomId, user]);
 
-  if (!user) {
-    return (
-      <Card title="Sign In">
-        <SignIn />
-      </Card>
-    );
-  }
+  const filename = useRoomField('filename');
 
   return (
     <Layout
@@ -76,8 +73,17 @@ export function RoomView() {
     >
       <RoomSider />
       <Content className="site-layout-background" style={{ padding: '0 20px' }}>
-        {latestURL}
-        <Player url={latestURL} />
+        <Title
+          level={4}
+          style={
+            filename === file?.name
+              ? { fontStyle: 'normal' }
+              : { fontStyle: 'italic', opacity: 0.5 }
+          }
+        >
+          {filename}
+        </Title>
+        <Player url={latestURL} file={file} />
         <URLControl
           inputValue={inputValue}
           onInputChange={onInputChange}
@@ -103,29 +109,21 @@ function useLatestURL(...urlsWithTimes: Array<[string | null, number]>) {
   return latestURL;
 }
 
-// function useRoomFromRoute() {
-//   const {
-//     route: {
-//       params: { roomId },
-//     },
-//   } = useRoute();
-//
-//   const { user } = useAuth();
-//
-//   React.useEffect(() => {
-//     async function checkAndFetchRoom() {
-//       if (!user) {
-//         return;
-//       }
-//
-//       const roomSnap = await firestore.collection('rooms').doc(roomId).get();
-//       if (!roomSnap.exists) {
-//         return;
-//       }
+function useRoomField<TKey extends keyof RemoteRoom>(key: TKey) {
+  const [value, setValue] = React.useState<RemoteRoom[TKey] | null>(null);
+  const {
+    route: {
+      params: { roomId },
+    },
+  } = useRoute();
 
-//       generateNewRoom(user);
-//     }
+  React.useEffect(() => {
+    const unsubscribe = rooms.doc(roomId).onSnapshot((snap) => {
+      setValue(snap.get(key));
+    });
 
-//     checkAndFetchRoom();
-//   }, [roomId, user]);
-// }
+    return () => unsubscribe();
+  }, [key, roomId]);
+
+  return value;
+}

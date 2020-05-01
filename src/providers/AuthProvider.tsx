@@ -3,6 +3,7 @@ import 'firebase/analytics';
 import 'firebase/auth';
 import 'firebase/firestore';
 import * as React from 'react';
+import { useRouter } from 'react-router5';
 
 const config = {
   apiKey: 'AIzaSyDwjP9xGN_L1717AL2aKqs5risj8UKGDCM',
@@ -28,20 +29,32 @@ interface Props {
 
 const auth = firebase.auth();
 const firestore = firebase.firestore();
+const users = firestore.collection('users');
 
 export function AuthProvider({ children }: Props) {
   const [user, setUser] = React.useState(auth.currentUser);
   const [isAuthLoaded, setIsAuthLoaded] = React.useState(false);
+  const { navigate } = useRouter();
 
   React.useEffect(() => {
     async function updateUser(u: firebase.User | null) {
-      if (!u || !u.uid) {
+      if (u === null) {
+        navigate('login');
         return;
       }
 
-      await firestore.collection('users').doc(u.uid).update({
-        lastLoginTime: new Date().toUTCString(),
-      });
+      const data = {
+        lastLoginTime: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+
+      const doc = users.doc(u.uid);
+      const snap = await doc.get();
+
+      if (snap.exists) {
+        await doc.update(data);
+      } else {
+        await doc.set(data);
+      }
     }
 
     const unsubscribe = auth.onAuthStateChanged((u) => {
@@ -51,7 +64,7 @@ export function AuthProvider({ children }: Props) {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [navigate]);
 
   const logout = React.useCallback(() => {
     return auth.signOut();

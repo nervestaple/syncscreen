@@ -5,9 +5,10 @@ import { DragPane } from '../components/DragPane';
 
 const DropzoneContext = React.createContext<{
   url: string | null;
+  file: File | null;
   lastSetTime: number;
   onClick: React.MouseEventHandler;
-}>({ url: null, lastSetTime: Date.now(), onClick: () => {} });
+}>({ url: null, file: null, lastSetTime: Date.now(), onClick: () => {} });
 
 interface Props {
   children: React.ReactNode;
@@ -15,19 +16,22 @@ interface Props {
 
 export function DropzoneProvider({ children }: Props) {
   const [url, setURL] = React.useState<string | null>(null);
+  const [file, setFile] = React.useState<File | null>(null);
   const [lastSetTime, setLastSetTime] = React.useState(() => Date.now());
 
   const onDrop = React.useCallback((acceptedFiles: File[]) => {
     if (!(acceptedFiles.length > 0)) {
       return;
     }
-    setURL(URL.createObjectURL(acceptedFiles[0]));
+    const file = acceptedFiles[0];
+    setURL(URL.createObjectURL(file));
+    setFile(file);
     setLastSetTime(Date.now());
   }, []);
 
   const { getRootProps, getInputProps, isDragAccept } = useDropzone({
     onDrop,
-    accept: 'video/*',
+    accept: 'video/*,.mkv',
     multiple: false,
   });
 
@@ -39,7 +43,7 @@ export function DropzoneProvider({ children }: Props) {
 
   return (
     <div {...rootProps}>
-      <DropzoneContext.Provider value={{ url, onClick, lastSetTime }}>
+      <DropzoneContext.Provider value={{ url, file, onClick, lastSetTime }}>
         {children}
       </DropzoneContext.Provider>
 

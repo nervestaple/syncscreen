@@ -1,76 +1,76 @@
-import * as firebase from 'firebase/app';
 import * as React from 'react';
-import ReactPlayer from 'react-player';
-import { useRoute } from 'react-router5';
+
+import '../video-js.css';
+
+import { useHover } from '../utils/useHover';
+import { usePlayer } from '../utils/usePlayer';
+
+import { PlayerControls } from './PlayerControls';
+import { useRoom } from '../utils/useRoom';
 
 interface Props {
   url: string | null;
+  file: File | null;
 }
 
-type ProgressHandler = (state: {
-  played: number;
-  playedSeconds: number;
-  loaded: number;
-  loadedSeconds: number;
-}) => void;
-
-const rooms = firebase.firestore().collection('rooms');
-
-export function Player({ url }: Props) {
-  const {
-    route: {
-      params: { roomId },
-    },
-  } = useRoute();
-
-  const roomDoc = roomId ? rooms.doc(roomId) : null;
-
-  // TODO: any better way to handle null roomId? catch it earlier?
-  const handleProgress: ProgressHandler = React.useCallback(
-    async ({ playedSeconds }) => {
-      if (!roomDoc) {
-        return;
-      }
-      await roomDoc.update({ playedSeconds });
-    },
-    [roomDoc],
+export function Player({ url, file }: Props) {
+  const [isVideoHovered, videoHoverRef] = useHover<HTMLDivElement>();
+  const [{ isPlaying, currentPlayedSeconds }, player, ref] = usePlayer(
+    url,
+    file,
   );
 
-  const handleStart = React.useCallback(async () => {
-    if (!roomDoc) {
-      return;
-    }
-    await roomDoc.update({ isPlaying: true });
-  }, [roomDoc]);
+  const dispatch = useRoom(url, file, player);
 
-  const handlePause = React.useCallback(async () => {
-    if (!roomDoc) {
-      return;
-    }
-    await roomDoc.update({ isPlaying: false });
-  }, [roomDoc]);
+  const controlsDisabled = !player || !url || !file;
 
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '30vw',
-        backgroundColor: 'black',
-        border: '1px solid #303030',
-        maxHeight: '90vh',
-      }}
-    >
-      {url && (
-        <ReactPlayer
-          url={url}
-          controls={true}
-          width="100%"
-          height="100%"
-          onProgress={handleProgress}
-          onStart={handleStart}
-          onPause={handlePause}
+    <>
+      <div
+        data-vjs-player
+        style={{
+          width: '100%',
+          height: '30vw',
+          backgroundColor: 'black',
+          border: '1px solid #303030',
+          maxHeight: '90vh',
+        }}
+        ref={videoHoverRef}
+      >
+        <video
+          ref={ref}
+          className="video-js"
+          onClick={
+            () => null
+            // controlsDisabled ? null : dispatch({ type: 'togglePlay' })
+          }
         />
-      )}
-    </div>
+        <PlayerControls
+          isVideoHovered={isVideoHovered}
+          disabled={controlsDisabled}
+          time={currentPlayedSeconds}
+          isPlaying={isPlaying}
+          onFullScreenClick={() => {
+            if (!player) {
+              return;
+            }
+            if (document.fullscreenElement) {
+              player.exitFullscreen();
+            } else {
+              player.requestFullscreen();
+            }
+          }}
+          onTogglePlayClick={() => dispatch({ type: 'togglePlay' })}
+          onSeek={(newValue) => dispatch({ type: 'seek', time: newValue })}
+          duration={player?.duration()}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            width: '100%',
+            padding: '2px 10px',
+          }}
+        />
+      </div>
+    </>
   );
 }
